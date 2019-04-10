@@ -1,0 +1,90 @@
+enum AllowedExtension {
+  png
+  jpg
+  bmp
+  gif
+  tif
+  tiff
+  jpeg
+}
+
+enum AllowedSource {
+  microscope
+  camera
+}
+
+type Picture {
+  _id: ID
+  "You can use the filename or give a more explicit name to the image"
+  name: String
+  "filepath indicates where the picture file is stored"
+  filepath: String
+  "captureTimestamp is the date and time when the picture was shot"
+  captureTimestamp: Date
+  captureSource: AllowedSource
+  "captureZoom represents the parameter used on the capture device like 1x, 2x, 4x, 10x..."
+  captureZoom: Int
+  "The scale represents the number of mircometers by pixel"
+  scale: Float
+  experienceCode: String
+  "author is the fullname of the person who took the picture or made the experience on the machine that took the picture"
+  author: String
+  "objects are biomaterials, cells or spheroids for exemples, that where printed and observables on the picture "
+  pictureObjects: [PictureObject]
+  "tags can be any metadata that can be added to an picture to reference it and facilitate future searches"
+  tags: [String]
+  "If you need to add other metadata with a key/value format in JSON"
+  metadata: JSON
+  "extension is the file type or mime type of the piture"
+  extension: AllowedExtension
+  description: String
+  "annotations is the related annotations files to the picture"
+  annotations: [Annotation]
+  createdAt: Date
+  updatedAt: Date
+}
+
+input PictureCreateInput {
+  name: String
+  filepath: String!
+  captureTimestamp: Date!
+  captureSource: AllowedSource!
+  captureZoom: Int
+  experienceCode: String
+  scale: Float
+  author: String!
+  pictureObjectNames: [String]
+  tags: [String]
+  metadata: JSON
+  extension: AllowedExtension
+  description: String
+  annotations: [ID]
+}
+
+input PictureEditInput {
+  _id: ID!
+  name: String
+  filepath: String
+  captureSource: AllowedSource
+  captureZoom: Int
+  experienceCode: String
+  scale: Float
+  author: String
+  pictureObjectNames: [String]
+  tags: [String]
+  metadata: JSON
+  extension: AllowedExtension
+  description: String
+  annotations: [ID]
+}
+
+type Query {
+  getPictures: [Picture]! @requireAuth(roles: [admin, user])
+  getPicture(_id: ID, name: String): Picture! @requireAuth(roles: [admin, user])
+}
+
+type Mutation {
+  createPicture(input: PictureCreateInput!): Picture! @requireAuth(roles: [admin, user])
+  editPicture(input: PictureEditInput): Picture! @requireAuth(roles: [admin, user])
+  deletePicture(_id: ID!): Picture! @requireAuth(roles: [admin, user])
+}

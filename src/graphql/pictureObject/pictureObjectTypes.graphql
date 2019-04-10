@@ -1,0 +1,26 @@
+enum AllowedPictureObjectType {
+  cell
+  biomaterial
+  spheroid
+}
+
+type PictureObject {
+  _id: ID
+  name: String
+  type: AllowedPictureObjectType
+  metadata: JSON
+  pictures: [Picture]
+  createdAt: Date
+  updatedAt: Date
+}
+
+type Query {
+  getPictureObjects: [PictureObject]! @requireAuth(roles: [admin, user])
+  getPictureObject(_id: ID, name: String): PictureObject! @requireAuth(roles: [admin, user])
+}
+
+type Mutation {
+  createPictureObject(name: String!, type: AllowedPictureObjectType!, metadata: JSON): PictureObject! @requireAuth(roles: [admin, user])
+  editPictureObject(_id: ID!, name: String, type: AllowedPictureObjectType, metadata: JSON): PictureObject! @requireAuth(roles: [admin, user])
+  deletePictureObject(_id: ID!): PictureObject! @requireAuth(roles: [admin, user])
+}

@@ -1,0 +1,102 @@
+#do not forget to add your variables and autorization header like that :
+#{
+#  "Authorization": "Bearer eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXV8Lt3uXa-dgnHohYqP5VLnBRaXUZMQJplEZcBZgD0yoE5_xRX17lvow5nAZCZcmRku5A8sbVdmWlch6qTOHlTS31_x6Jx17j0aWqRsULrva09LuT4zXfjV4fzMJSFsLcfipugMGO7_d67XPTlWQkYoHgtsHTGaA_PwEnLrtREHShhh99Ar1gGepUztF6n4_ZhL8zc78x33s7rZFqYDWEtrE6Rb2-EjlGky-Qdkhh4LNB2P1Lnm7QZouvuc3xyVhImVF9mhcSQzKO6vPqGbuVvcbegzoz95JX5XeXzaMZX3tY-LZ7hugYeky0LuXrxliXaql7qvWT94"
+#}
+# Note : you do no need the mutations RegisterWithEmail, Signup and Login if you use AuthLdap
+# Learn to do graphql queries and mutations : https://graphql.org/learn/queries/
+# Be careful to query depht as you can nest in queries : this could take too much time or put the server down :read this : https://www.howtographql.com/advanced/4-security/
+# If needed implement
+#- https://www.npmjs.com/package/graphql-cost-analysis
+#- https://www.npmjs.com/package/graphql-query-complexity
+#- https://www.npmjs.com/package/graphql-validation-complexity
+#- https://www.npmjs.com/package/graphql-depth-limit
+
+query Me {me { _id firstname lastname email fullname username}}
+mutation Login($email: String!, $password: String!) { login(email: $email, password: $password) { token user { _id firstname lastname fullname email avatarColor } } }
+mutation RegisterWithEmail($email: String!) {registerWithEmail(email: $email) { _id email }}
+query Users {users {_id firstname lastname email avatarColor username provider isSignedUp isAccountValidatedByEmail displayNameByProvider} }
+query User($_id: ID!) {user(_id: $_id) {_id firstname email lastname avatarColor}}
+mutation Signup($_id: ID!, $firstname: String!, $lastname: String!, $password: String!) {signup(_id: $_id, firstname: $firstname, lastname: $lastname, password: $password) {token user {_id firstname lastname email fullname avatarColor}}}
+mutation EditUser($_id: ID!, $firstname: String, $lastname: String) {editUser(_id: $_id, firstname: $firstname, lastname: $lastname) {_id firstname lastname email avatarColor}}
+mutation DeleteUserWithPassword($_id: ID!, $password: String!) {deleteUserWithPassword(_id: $_id, password: $password) {confirmed user{_id firstname lastname email avatarColor}}}
+mutation DeleteUser($_id: ID!) {deleteUser(_id: $_id) {_id lastname firstname email avatarColor}}
+mutation AuthLdap($username: String!, $password: String!) { authLdap(input: {username: $username, password: $password}) {token user {_id email role isSignedUp isAccountValidatedByEmail firstname lastname lastLogged}} }
+query roles {users { role }}
+mutation register($email: String!) {registerWithEmail(email: $email) { email _id firstname lastname }}
+mutation createPicture(
+  $name: String,
+  $filepath: String!,
+  $captureTimestamp: Date!,
+  $captureSource: AllowedSource!,
+  $captureZoom: Int,
+  $scale: Float,
+  $author: String!,
+  $experienceCode: String,
+  $pictureObjectNames: [String],
+  $tags: [String],
+  $metadata: JSON,
+  $extension: AllowedExtension,
+  $description: String
+) {
+  createPicture(input: {
+    name: $name,
+    filepath: $filepath,
+    captureTimestamp: $captureTimestamp,
+    captureSource: $captureSource,
+    captureZoom: $captureZoom,
+    experienceCode: $experienceCode,
+    scale: $scale,
+    author: $author,
+    pictureObjectNames: $pictureObjectNames,
+    tags: $tags,
+    metadata: $metadata,
+    extension: $extension,
+    description: $description
+  }
+  ) {
+    _id name description filepath captureZoom captureSource captureTimestamp scale author pictureObjects { _id name } tags metadata extension
+  	}
+  }
+
+mutation createPictureObject($name: String!, $type: AllowedPictureObjectType!, $metadata: JSON) {createPictureObject(name: $name, type: $type, metadata: $metadata) { _id name type metadata createdAt updatedAt}}
+mutation editPictureObject($_id: ID!, $name: String, $type: AllowedPictureObjectType, $metadata: JSON) {editPictureObject(_id: $_id, name: $name, type: $type, metadata: $metadata) { _id name type metadata createdAt updatedAt}}
+mutation createAnnotation($name: String, $type: AllowedAnnotationType!, $filepath: String!, $author: String!, $pictureIds: [ID]!) {createAnnotation(input: {name: $name, type: $type, filepath: $filepath, author: $author, pictureIds: $pictureIds}) {_id name type filepath author pictures {_id name filepath } createdAt updatedAt}}
+mutation editAnnotation($_id: ID!, $name: String, $type: AllowedAnnotationType, $filepath: String, $author: String) {editAnnotation(_id: $_id, name: $name, type: $type, filepath: $filepath, author: $author) {_id name type filepath author pictures {_id name filepath } createdAt updatedAt}}
+query getPictureObjects { getPictureObjects {_id name type metadata pictures {_id name filepath createdAt updatedAt captureTimestamp author}}}
+query getPictureObject($_id: ID!){getPictureObject(_id: $_id){_id name type metadata pictures{_id name filepath author}}}
+query getPictures{getPictures{_id name captureZoom captureSource captureTimestamp scale description createdAt updatedAt metadata tags pictureObjects{_id name metadata type} annotations{_id name filepath}}}
+query getPicture($_id: ID!){getPicture(_id: $_id){_id name captureZoom captureSource captureTimestamp scale description createdAt updatedAt metadata tags pictureObjects{_id name metadata type pictures{name}} annotations{_id name filepath}}}
+query getAnnotations{getAnnotations{_id name filepath type author pictures{name filepath}}}
+query getAnnotation($_id: ID!) {getAnnotation(_id: $_id){_id name filepath type author createdAt updatedAt pictures{name filepath}}}
+mutation editPicture(
+  $_id: ID!,
+  $name: String,
+  $filepath: String!,
+  $captureSource: AllowedSource,
+  $captureZoom: Int,
+  $scale: Float,
+  $author: String!,
+  $experienceCode: String,
+  $pictureObjectNames: [String],
+  $tags: [String],
+  $metadata: JSON,
+  $extension: AllowedExtension,
+  $description: String
+) {editPicture(input: {
+  _id: $_id,
+  name: $name,
+  filepath: $filepath,
+  captureSource: $captureSource,
+  captureZoom: $captureZoom,
+  experienceCode: $experienceCode,
+  scale: $scale,
+  author: $author,
+  pictureObjectNames: $pictureObjectNames,
+  tags: $tags,
+  metadata: $metadata,
+  extension: $extension,
+  description: $description
+}) {_id name description filepath captureZoom captureSource captureTimestamp scale author pictureObjects { _id name metadata } tags metadata extension annotations {_id name type filepath author}}}
+mutation deleteAnnotation($_id: ID!){deleteAnnotation(_id: $_id){_id name filepath type}}
+mutation deletePicture($_id: ID!){deletePicture(_id: $_id) {_id name filepath}}
+mutation deletePictureObject($_id: ID!){deletePictureObject(_id: $_id) {_id name type}}

@@ -1,0 +1,39 @@
+enum AllowedAnnotationType {
+  dot
+  contour
+  mask
+}
+
+type Annotation {
+  _id: ID
+  name: String
+  type: AllowedAnnotationType
+  filepath: String
+  author: String
+  pictures: [Picture]
+  createdAt: Date
+  updatedAt: Date
+}
+
+input AnnotationInput {
+  name: String
+  "Because you can make different kind of annotations on an picture, the annotation has a type"
+  type: AllowedAnnotationType!
+  "filepath is the filepath where the annotation file is stored."
+  filepath: String!
+  "author is the person who annotated the picture and made the annotation file"
+  author: String!
+  "You can associate annotation files to pictures"
+  pictureIds: [ID]!
+}
+
+type Query {
+  getAnnotations: [Annotation]! @requireAuth(roles: [admin, user])
+  getAnnotation(_id: ID, name: String): Annotation! @requireAuth(roles: [admin, user])
+}
+
+type Mutation {
+  createAnnotation(input: AnnotationInput!): Annotation! @requireAuth(roles: [admin, user])
+  editAnnotation(_id: ID!, name: String, filepath: String, author: String, type: AllowedAnnotationType): Annotation! @requireAuth(roles: [admin, user])
+  deleteAnnotation(_id: ID!): Annotation! @requireAuth(roles: [admin, user])
+}
